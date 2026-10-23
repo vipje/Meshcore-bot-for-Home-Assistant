@@ -42,7 +42,7 @@ check("get socket()" in base and "this.initializeSocket();\n                this
 
 check("setInterval(pollBanners, 10000)" not in base and "if (!document.hidden) pollBanners()" in base, "bannercontrole: elke 30 s en alleen als zichtbaar")
 node = shutil.which("node")
-jsd = os.environ.get("JSDOM_PATH") or next((p for p in ("/tmp/meshcore-tests/jsd/node_modules", "/tmp/claude-0/jsd/node_modules")
+jsd = os.environ.get("JSDOM_PATH") or next((p for p in ("/tmp/meshcore-tests/jsd/node_modules",)
                                             if os.path.isdir(os.path.join(p, "jsdom"))), None)
 if node and jsd:
     script = f"""
