@@ -391,5 +391,27 @@ late = counted(cb); late._due = time.time() + 999
 cb.db_manager.set_metadata("count.last_day", "2000-01-01")
 check(asyncio.run(late.tick()) is False, "telling: niet voor de wachttijd na de start")
 
+# a database that can't be read or written (disk full) must not make a new id each start
+broken = make_bot(ON); broken.config["InstallCount"] = {"enabled": "true"}
+class _NoRead:
+    def __enter__(self): raise sqlite3.OperationalError("disk I/O error")
+    def __exit__(self, *a): return False
+broken.db_manager.connection = lambda: _NoRead()
+broken.db_manager.get_metadata = lambda k: None         # upstream logs the error and returns None
+cbr = counted(broken); cbr._due = 0
+try:
+    asyncio.run(cbr.tick()); raised = False
+except sqlite3.OperationalError:
+    raised = True
+check(raised and len(sent_count) == 2, "telling: database niet leesbaar -> geen nieuw nummer, niets verstuurd")
+ro = make_bot(ON); ro.config["InstallCount"] = {"enabled": "true"}
+ro.db_manager.set_metadata = lambda k, v: None          # write silently lost, like upstream on a full disk
+cro = counted(ro); cro._due = 0
+try:
+    asyncio.run(cro.tick()); raised = False
+except RuntimeError:
+    raised = True
+check(raised and len(sent_count) == 2, "telling: nieuw nummer niet opgeslagen -> niets verstuurd")
+
 print(f"\n{len(fails)} fouten")
 sys.exit(1 if fails else 0)

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.2
+
+- InstallCount no longer makes a new anonymous id when the bot's database can't be read or written (for example a
+  full disk). Before, every restart in that state sent a new id, so one installation was counted many times.
+
 ## 1.5.1
 
 - InstallCount (on by default, one switch to turn it off) now also sends the bot's language, the processor type, the

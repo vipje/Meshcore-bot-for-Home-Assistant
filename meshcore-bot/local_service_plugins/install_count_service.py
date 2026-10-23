@@ -40,12 +40,19 @@ CHECK_EVERY_S = 3600
 
 
 def install_id(bot: Any) -> str:
-    """The random, anonymous id of this installation (made once)."""
-    raw = bot.db_manager.get_metadata(ID_KEY)
+    """The random, anonymous id of this installation (made once).
+
+    Raises when the database can't be read or a new id does not stick (disk full, I/O error): get_metadata and
+    set_metadata swallow errors, and a new id on every start would count one installation many times."""
+    with bot.db_manager.connection() as conn:
+        row = conn.execute("SELECT value FROM bot_metadata WHERE key = ?", (ID_KEY,)).fetchone()
+    raw = row[0] if row else None
     if raw and len(str(raw)) == 16:
         return str(raw)
     new = uuid.uuid4().hex[:16]
     bot.db_manager.set_metadata(ID_KEY, new)
+    if bot.db_manager.get_metadata(ID_KEY) != new:
+        raise RuntimeError("install id not stored (database not writable)")
     return new
 
 
