@@ -10,6 +10,13 @@ elke add-on (Engels).
 
 - **Home Assistant OS of Supervised.** Add-ons hebben de Supervisor nodig; een installatie als *Container* of *Core* kan
   ze niet draaien.
+- **De radio werkt eerst op zichzelf.** Stel de node direct na het flashen van de companion-firmware één keer in met
+  een MeshCore-app, voordat je hem aan Home Assistant koppelt: bijvoorbeeld de webapp op
+  [meshcore.io](https://meshcore.io), verbonden via **USB** (hij probeert eerst Bluetooth: laat dat mislukken en kies het
+  USB-icoon onderaan). De app ziet dat de node nieuw is en loopt met je door de eerste instelling (naam en radio-instellingen).
+  Stuur een testbericht naar de mesh en kijk of het aankomt. Koppel de radio pas daarna aan Home Assistant en doorloop de
+  installatiewizard van de bot. Een vers geflashte node die nooit is ingesteld, werkt niet op de mesh, en vanuit de bot
+  lijkt dat op een kapotte verbinding (GitHub-issue #2).
 - **De radio zit met USB** aan de computer waarop Home Assistant draait, **of** het is een **WiFi-companion** in je netwerk
   (handig als Home Assistant in Proxmox of een andere virtuele machine draait; zie
   [Home Assistant in Proxmox](#home-assistant-in-proxmox-of-een-andere-virtuele-machine) hieronder).

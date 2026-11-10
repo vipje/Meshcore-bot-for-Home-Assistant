@@ -479,6 +479,19 @@ For a busy channel where the bot should listen but not run commands, typically t
   feeds (items that come in at night are skipped, so they do not all go out in the morning) and, only when you switch it
   on, the webhook (it then answers 200 with `{"skipped": "night mode"}`, so Home Assistant sees no error). Answers to people
   are never held back. Changes on the card apply at once.
+- **Long replies** (card **LongReplies**, off by default): a radio message holds about 150 bytes. A longer reply is split
+  into several messages, at a ` | ` separator where possible, so nothing is lost (without this add-on the radio cuts a
+  channel message off silently, often mid-word). On a big, busy mesh a part 2 costs airtime and often arrives late or not at
+  all, so with the card on you choose: *Leave out first when too long* (default `Received at`; comma-separated, a ` | `
+  part that starts with one of these is dropped first, in that order, until the reply fits; the first part always stays),
+  *Max parts per reply* (0 = all; 1 = always one message, the rest is dropped and the message ends with "…" when *Mark a
+  shortened reply* is on), *Split at " | "* (off: at a space) and whether it applies to channel replies, direct messages or
+  both. Replies that a command sends as several messages on purpose (for example `path`) are not affected: each of those
+  messages fits. Every reply that is too long gives one line in the log, card on or off, for example
+  `LongReplies: test reply too long for a channel message (182 > 148 bytes): split into 2 parts`, and the **Problems** page
+  (Settings) counts them per day and per command, so you can see how often it happens before changing anything. Only the
+  command word, the sizes and what was left out are logged, never the text. The card is a service: changes apply after a
+  restart.
 - **A weekly announcement** is no longer an add-on option. Make it an ordinary scheduled message on the dashboard's **Schedule** page:
   channel, day, time and text (at most 130 bytes per message). It is not coordinated with other bots: if another bot in your region also
   posts one, choose a different day or time. Set *Bot, Time zone* if the bot should not use the system time zone.
@@ -722,8 +735,15 @@ Commands for everyone on the mesh. Each has a card on the Plugins page with an o
 
 ### Advanced
 
-- **Keyword replies**: one `keyword = "reply"` per entry. Placeholders: `{sender}`, `{connection_info}` (route, bytes per
-  hop when known, SNR, RSSI), `{bytes_per_hop}` (1, 2 or 3), `{hops}`, `{timestamp}`, `{phrase_part}`. `help` is handled before
+- **The `test` reply** can be changed on the **test** card: *Response format* (empty = the standard
+  `ack @[{sender}]{phrase_part} | {connection_info} | Received at: {timestamp}`). The card wins over a `test` keyword below.
+  For example `ack @[{sender}] | {hops_label} | SNR {snr} dB | to Chicago, IL` keeps it to one message and says where the
+  bot is.
+- **Keyword replies**: one `keyword = "reply"` per entry. Placeholders (also for the test card's *Response format*):
+  `{sender}`, `{connection_info}` (route, bytes per hop when known, SNR, RSSI), `{path}` (route only), `{hops}` (a number),
+  `{hops_label}` ("3 hops"), `{bytes_per_hop}` (1, 2 or 3), `{snr}` and `{rssi}` (numbers, add the unit yourself),
+  `{timestamp}`, `{elapsed}` (travel time), `{path_distance}` and `{firstlast_distance}` (when the repeaters' positions are
+  known), `{phrase_part}` (": " plus the text after `test`). `help` is handled before
   keywords, so a `help` keyword is never used: set your own help text on the **help** card instead. Without a `ping` keyword,
   `ping` answers "Pong!" with the hops, the repeater it came via, SNR, RSSI, travel time and the bot's time, in the
   sender's language (unknown parts are left out).

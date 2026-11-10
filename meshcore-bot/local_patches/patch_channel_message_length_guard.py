@@ -16,6 +16,10 @@ poll_command.py (or any other single command) since every command's channel
 replies go through this one function - fixing it here covers all of them at
 once, including any added later, without each one needing its own length
 check.
+
+What happens to a too-long message (split, leave parts out, at most N parts)
+is decided by modules/long_replies.py (card LongReplies, off = split and send
+everything).
 """
 import pathlib
 import sys
@@ -62,11 +66,11 @@ patch(
         channel_max_bytes = max(130, 160 - len(bot_name.encode('utf-8')) - 2)
         content_bytes = len(content.encode('utf-8'))
         if content_bytes > channel_max_bytes:
-            chunks = self.split_text_into_utf8_chunks(content, channel_max_bytes)
-            self.logger.warning(
-                "Channel message to %s exceeds %d UTF-8 bytes (%d); auto-splitting into %d chunk(s)",
-                channel, channel_max_bytes, content_bytes, len(chunks),
-            )
+            # LongReplies card (modules/long_replies.py): optionally leave parts out or limit the number of
+            # parts, and log one line about every too-long reply (card on or off).
+            from .long_replies import shape as _long_replies_shape
+            chunks = _long_replies_shape(self.bot, content, channel_max_bytes, "channel",
+                                         self.split_text_into_utf8_chunks, self.logger)
             rate_limit_seconds = self.bot.config.getfloat('Bot', 'bot_tx_rate_limit_seconds', fallback=1.0)
             sleep_time = max(rate_limit_seconds + 0.5, 1.0)
             for i, chunk in enumerate(chunks):

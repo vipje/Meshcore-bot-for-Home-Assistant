@@ -23,6 +23,7 @@ page is also run in a browser-like DOM (jsdom).
 | `test_repeater_page.py` | The Repeater page on the real viewer: menu item, page, `/api/repeater` for 24 h / 7 / 30 days, choosing a repeater, thinning long periods, gaps kept as gaps, the latest neighbour list, names only as text. |
 | `test_ingress.py` | All dashboard pages with Home Assistant's ingress header (sidebar), with and without a password. |
 | `test_channel_watchdog.py` | The channel check after a busy radio start (the failure of 2026-09-20). |
+| `test_long_replies.py` | The LongReplies card: card off splits and sends every part as before, card on leaves listed parts out first, sends at most N parts with an ellipsis, splits at a space when asked, applies to channel and DM separately; every too-long reply gives one log line that the Problems page groups per command; the command word is set by send_response and reset. |
 | `test_notify_limiter.py` | A notification must not use up the reply budget. |
 | `test_botlist_greeter.py`, `test_bot_names.py`, `test_channel_hint_live.py` | Bot recognition, `botlist`, the greeter skipping bots, hint settings applied live. |
 | `test_f1_data.py`, `test_f1_game.py`, `test_f1_service.py` | The F1 channel: reading `f1_sensor`, the Dutch texts, a plan over a whole race weekend (daily countdown, announcement, reminders, results, standings, live milestones, safety car, qualifying result) without repeats or stale posts; the prediction game keyed on the public key; the service posting, remembering across restarts, backing off when sending fails; the `f1` command. |

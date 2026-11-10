@@ -99,6 +99,10 @@ patch_contact_protection.py
 # "Received at: 22:13:34" is not torn apart); see patch_split_at_separator.py.
 patch_split_at_separator.py
 
+# LongReplies card for DMs (upstream DM length guard) and the command word in its log line; the channel side is
+# in patch_channel_message_length_guard.py. See patch_long_replies.py and modules/long_replies.py.
+patch_long_replies.py
+
 # DM-sent hook: upstream only notifies listeners about channel messages the bot
 # sends. This adds bot.dm_sent_listeners for DMs (and thus room server replies),
 # which the Home Assistant bridge uses to show them in the MeshCore Chat panel.

@@ -9,6 +9,12 @@ the MeshCore **companion (USB)** firmware. Every option is also explained in the
 
 - **Home Assistant OS or Supervised.** Add-ons need the Supervisor; a Home Assistant *Container* or *Core* installation
   cannot run them.
+- **The radio works on its own first.** Right after flashing the companion firmware, set the node up once with a
+  MeshCore app before you connect it to Home Assistant: for example the web app at [meshcore.io](https://meshcore.io),
+  connected over **USB** (it tries Bluetooth first: let that fail and use the USB icon at the bottom). The app sees that
+  the node is new and walks you through the first setup (name and radio settings). Send a test message to the mesh and check
+  that it arrives. Only then connect the radio to Home Assistant and run the bot's setup wizard. A freshly flashed node
+  that was never set up does not work on the mesh, and from the bot that looks like a broken connection (GitHub issue #2).
 - **The radio is plugged in** by USB into the machine that runs Home Assistant, **or** it is a **WiFi companion** on your
   network (handy when Home Assistant runs in Proxmox or another virtual machine; see
   [Home Assistant in Proxmox](#home-assistant-in-proxmox-or-another-virtual-machine) below).

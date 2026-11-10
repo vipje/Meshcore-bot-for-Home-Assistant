@@ -13,7 +13,7 @@ in one message, "22:13:34" in the next).
 Now the split prefers a " | " boundary, so every message consists of complete parts, and the
 separator that ends up at the start of the next message is dropped. Text without " | " splits
 exactly as before. It is a single central function, so this covers every command and both channel
-messages and DMs.
+messages and DMs. prefer_separator=False (the LongReplies card, see modules/long_replies.py) splits as upstream does.
 """
 import pathlib
 import sys
@@ -36,6 +36,11 @@ def patch(path: str, old: str, new: str) -> None:
 
 patch(
     "modules/command_manager.py",
+    """    def split_text_into_utf8_chunks(text: str, max_bytes: int) -> list[str]:""",
+    """    def split_text_into_utf8_chunks(text: str, max_bytes: int, prefer_separator: bool = True) -> list[str]:""",
+)
+patch(
+    "modules/command_manager.py",
     """            window = remaining[:fit]
             # Prefer newline, then space, within the fitting window
             split_at = window.rfind("\\n")
@@ -47,7 +52,7 @@ patch(
     """            window = remaining[:fit]
             # Prefer newline, then a " | " separator, then space, within the fitting window
             split_at = window.rfind("\\n")
-            if split_at <= 0:
+            if split_at <= 0 and prefer_separator:
                 if remaining[fit:fit + 3] == " | ":
                     split_at = fit          # the window ends exactly before a separator
                 else:
@@ -65,7 +70,7 @@ patch(
         return chunks if chunks else [""]""",
     """            chunks.append(chunk)
             remaining = remaining[split_at:].lstrip("\\n ")
-            if remaining.startswith("| "):
+            if prefer_separator and remaining.startswith("| "):
                 remaining = remaining[2:]   # the separator we cut at does not start the next message
         return chunks if chunks else [""]""",
 )

@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.6.0
+
+- **Long replies** (new card **LongReplies**, off by default, GitHub issue #3): a reply that is too long for one radio
+  message is split into parts, as before, so nothing is lost. With the card on you can leave parts out first (*Leave out
+  first when too long*, default `Received at`), send at most a number of parts (*Max parts per reply*, 1 = always one
+  message, ending with "…"), split at a space instead of at " | ", and choose channel replies, direct messages or both.
+- Every reply that is too long now gives one log line, card on or off, for example
+  `LongReplies: test reply too long for a channel message (182 > 148 bytes): split into 2 parts`. The **Problems** page
+  counts them per day and per command. The DM line no longer contains the recipient's name.
+- Documentation: the **test** card's *Response format* and all placeholders you can use in it and in keyword replies
+  (`{snr}`, `{rssi}`, `{hops_label}`, `{path}`, `{elapsed}`, distances), for example to add a place name to the `test`
+  reply (GitHub issue #4).
+- Installation guide: set the companion up once with a MeshCore app (over USB) and test it on the mesh before connecting
+  it to Home Assistant (GitHub issue #2).
+
 ## 1.5.2
 
 - InstallCount no longer makes a new anonymous id when the bot's database can't be read or written (for example a
