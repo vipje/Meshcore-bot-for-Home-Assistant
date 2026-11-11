@@ -105,6 +105,14 @@ check(out[0].startswith("@Piet ") and all(len(o.encode()) <= 130 for o in out), 
 check(sum(o.count("Repeater nummer") for o in out) == 9, "geen hop kwijt")
 out = path_run(hops, max_hops=3)
 check(len(out) == 1 and out[0].count("Repeater nummer") == 3 and "+6 more hops" in out[0], f"max 3 hops: één bericht met '+6 more hops' ({out})")
+# issue #1 (1.6.2): "Max hops shown 5" met lange namen gaf toch twee berichten -> minder hops, altijd één bericht
+long_hops = [f"{h:02x}: Lange repeaternaam nummer {h:02d}" for h in range(1, 10)]
+out = path_run(long_hops, max_hops=5)
+shown = out[0].count("Lange repeaternaam") if out else 0
+check(len(out) == 1 and len(out[0].encode()) <= 130 and 1 <= shown < 5 and f"+{9 - shown} more hops" in out[0],
+      f"max 5 hops die niet passen: één bericht, minder hops, rest in '+N more' ({out})")
+out = path_run(long_hops, max_hops=5, max_len=220)
+check(len(out) == 1 and out[0].count("Lange repeaternaam") == 5 and "+4 more hops" in out[0], "past het wel: alle 5 hops")
 out = path_run(hops[:2], max_hops=7)
 check(len(out) == 1 and "(1/" not in out[0], "korte route: één bericht, geen nummer")
 

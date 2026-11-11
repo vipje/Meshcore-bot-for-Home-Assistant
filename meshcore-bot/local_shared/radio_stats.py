@@ -19,6 +19,9 @@ async def _command(bot: Any, name: str) -> dict:
         return {}
 
 
+UPTIME_WRAP_S = 2 ** 32 // 1000   # 4294967 s = 49.7 days
+
+
 async def radio_stats(bot: Any) -> dict:
     """{nf, rssi, snr, bat, rup, err, rcv, snt, ftx, dtx, frx, drx, txa, rxa}; missing values are left out."""
     core, radio, packets = await _command(bot, "get_stats_core"), await _command(bot, "get_stats_radio"), await _command(bot, "get_stats_packets")
@@ -30,6 +33,11 @@ async def radio_stats(bot: Any) -> dict:
                      ("dtx", packets.get("direct_tx")), ("frx", packets.get("flood_rx")), ("drx", packets.get("direct_rx"))):
         if src is not None:
             out[key] = src
+    # The radio counts its uptime in milliseconds in 32 bits: after 49.7 days it starts again at 0, the airtime counters
+    # do not. Airtime longer than the uptime means it went round (once or more): add those rounds back.
+    air = max(radio.get("tx_air_secs") or 0, radio.get("rx_air_secs") or 0)
+    while up and air > up:
+        up += UPTIME_WRAP_S
     if up and radio.get("tx_air_secs") is not None:
         out["txa"] = round(100.0 * radio["tx_air_secs"] / up, 2)
     if up and radio.get("rx_air_secs") is not None:

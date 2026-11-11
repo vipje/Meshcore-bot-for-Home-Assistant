@@ -360,12 +360,15 @@ def build(opts: dict, data_dir: str) -> configparser.ConfigParser:
     for name in DEFAULT_OFF:
         set_option(cfg, command_section(name), "enabled", "false")
     forced = set()
+    sources = {}   # (section, key) -> which option sets it at every start (shown on the plugin card)
     for name in g("commands", "enable", []):
         set_option(cfg, command_section(name), "enabled", "true")
         forced.add((command_section(name), "enabled"))
+        sources[(command_section(name), "enabled")] = SOURCE_ENABLE
     for name in g("commands", "disable", []):
         set_option(cfg, command_section(name), "enabled", "false")
         forced.add((command_section(name), "enabled"))
+        sources[(command_section(name), "enabled")] = SOURCE_DISABLE
 
     # Free-form overrides last, so they win over everything above.
     # Format: "Section.key = value"
@@ -378,8 +381,10 @@ def build(opts: dict, data_dir: str) -> configparser.ConfigParser:
         section, _, key = target[0].partition(".")
         set_option(cfg, section.strip(), key.strip(), target[1])
         forced.add((section.strip(), key.strip()))
+        sources[(section.strip(), key.strip())] = SOURCE_EXTRA
 
     cfg.forced_keys = forced   # options that switch a seed key (read by merge_with_existing)
+    cfg.forced_sources = sources
     return cfg
 
 
@@ -427,6 +432,12 @@ def apply_maintenance(opts: dict, db_path: str) -> None:
 
 
 STATE_FILE = "generated_keys.json"
+# What the dashboard's plugin cards show as "set again at every start" (written at every start, see main()).
+STARTUP_OVERRIDES_FILE = "startup_overrides.json"
+SOURCE_ENABLE = "Commands → Enable in the add-on Configuration"
+SOURCE_DISABLE = "Commands → Disable in the add-on Configuration"
+SOURCE_EXTRA = "Advanced → Extra config lines in the add-on Configuration"
+SOURCE_OVERRIDE = "override.ini in the add-on's config folder"
 
 # Sections whose settings moved from the add-on options to the dashboard's Plugins page (2.7.0, 2.8.0).
 # config.ini owns their values now: the options for them are gone, so this only fills in what is
@@ -535,23 +546,40 @@ dashboard cards and override.ini at every start.
 """
 
 
-def apply_override(merged: configparser.ConfigParser, user_dir: str) -> None:
+def apply_override(merged: configparser.ConfigParser, user_dir: str) -> list:
     """override.ini in the add-on's own config folder (/addon_configs/..._meshcore_bot): every key in it wins.
-    Made (all comments) on the first start. A broken file is reported and ignored, never stops the start."""
+    Made (all comments) on the first start. A broken file is reported and ignored, never stops the start.
+    Returns the (section, key) pairs it set."""
     path = os.path.join(user_dir, "override.ini")
+    done = []
     try:
         if not os.path.exists(path):
             with open(path, "w", encoding="utf-8") as fh:
                 fh.write(OVERRIDE_TEMPLATE)
-            return
+            return done
         own = configparser.ConfigParser(interpolation=None, strict=False)
         own.optionxform = str
         own.read(path, encoding="utf-8")
         for section in own.sections():
             for key, value in own[section].items():
                 set_option(merged, section, key, value)
+                done.append((section, key))
     except (configparser.Error, OSError) as exc:
         print(f"generate_config: override.ini not used: {exc}", file=sys.stderr)
+    return done
+
+
+def write_startup_overrides(merged: configparser.ConfigParser, sources: dict, path: str) -> None:
+    """[{section, key, value, source}] of every key an add-on option or override.ini sets at every start, so the
+    dashboard's plugin card can say that a change there does not last (GitHub issue #1: plugins "switched off by
+    themselves" overnight, at the next start)."""
+    rows = [{"section": s, "key": k, "value": merged.get(s, k, fallback=""), "source": src}
+            for (s, k), src in sorted(sources.items())]
+    try:
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(rows, fh, ensure_ascii=False)
+    except OSError as exc:
+        print(f"generate_config: could not store {path}: {exc}", file=sys.stderr)
 
 
 def write_user_copy(config_path: str, user_dir: str) -> None:
@@ -580,10 +608,13 @@ def main() -> int:
     generated = build(opts, data_dir)
     state_path = os.path.join(data_dir, STATE_FILE)
     merged, keys = merge_with_existing(generated, config_path, state_path)
+    sources = dict(getattr(generated, "forced_sources", {}))
     if user_dir:
-        apply_override(merged, user_dir)
+        for pair in apply_override(merged, user_dir):
+            sources[pair] = SOURCE_OVERRIDE
     with open(config_path, "w", encoding="utf-8") as fh:
         merged.write(fh)
+    write_startup_overrides(merged, sources, os.path.join(data_dir, STARTUP_OVERRIDES_FILE))
     if user_dir:
         write_user_copy(config_path, user_dir)
     try:

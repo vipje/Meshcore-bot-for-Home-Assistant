@@ -422,8 +422,12 @@ class ChannelHint:
         channel = _norm(message.channel)
         user = _norm(getattr(message, "sender_id", ""))
         if now - self._last_channel.get(channel, 0.0) < self.cooldown:
+            self.bot.logger.info("ChannelHint: no hint in %s, one went out less than %d s ago (At most one hint per "
+                                 "channel every)", message.channel, int(self.cooldown))
             return False
         if now - self._last_user.get((channel, user), 0.0) < self.user_cooldown:
+            self.bot.logger.info("ChannelHint: no hint in %s, this person got one less than %d min ago",
+                                 message.channel, int(self.user_cooldown // 60))
             return False
         restricted = where is not None
         targets = list(where) if restricted else list(self.where)
@@ -446,6 +450,8 @@ class ChannelHint:
 
         if yield_to_bots and self.yield_seconds > 0:
             if now - self._bot_seen.get(channel, 0.0) < self.cooldown:
+                self.bot.logger.info("ChannelHint: no hint in %s, another bot was active there recently",
+                                     message.channel)
                 return False   # another bot is already active here: no need
             self._last_channel[channel] = now
             self._last_user[(channel, user)] = now
@@ -460,17 +466,20 @@ class ChannelHint:
     async def _send_after_yield(self, channel_name: str, channel: str, text: str, trigger_time: float) -> bool:
         await asyncio.sleep(self.yield_seconds + random.uniform(0, YIELD_JITTER_SECONDS))
         if self._bot_seen.get(channel, 0.0) >= trigger_time - 2:
-            self.bot.logger.info("ChannelHint: een andere bot heeft al gereageerd in %s, geen doorverwijzing", channel_name)
+            self.bot.logger.info("ChannelHint: no hint in %s, another bot answered first", channel_name)
             return False
         return await self._send_now(channel_name, text)
 
     async def _send_now(self, channel_name: str, text: str) -> bool:
         try:
-            return bool(await self.bot.command_manager.send_channel_message(
+            sent = bool(await self.bot.command_manager.send_channel_message(
                 channel_name, text, skip_user_rate_limit=True))
         except Exception as e:  # noqa: BLE001
-            self.bot.logger.warning("ChannelHint: hint versturen mislukt: %s", e)
+            self.bot.logger.warning("ChannelHint: sending the hint failed: %s", e)
             return False
+        if sent:
+            self.bot.logger.info("ChannelHint: hint sent in %s", channel_name)
+        return sent
 
 
 def get_channel_hint(bot: Any) -> ChannelHint:

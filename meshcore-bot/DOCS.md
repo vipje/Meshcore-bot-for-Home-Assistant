@@ -445,6 +445,8 @@ For a busy channel where the bot should listen but not run commands, typically t
   work*). When someone types a command word that has a hint switched on, the bot answers once with a friendly pointer to the channels you
   list, for example *"We helpen je heel graag verder in #bot of #test"*. At most one hint per channel per *At most one hint per channel
   every* seconds and one per person every 10 minutes, so it cannot flood the channel. Changes on this card work within about 30 seconds.
+  The log says when a hint was sent (`ChannelHint: hint sent in Public`) and why one was not (too soon after the last one,
+  the same person, another bot active or answering first).
   **Which commands give a hint is set per plugin**: on **Plugins**, pick a command and set **Hint in the public channel**:
   - *Off*: no hint (the default for every command);
   - *When the command word is typed alone*: `help`, `Test?`, `!ping` or `@[bot] help` get a hint, anything longer does not;
@@ -766,6 +768,10 @@ Inside the add-on, in its own data folder (`/data/config.ini` in the container),
   config it uses, to read and compare (changes in the copy are not used). Your own lines go in **`override.ini`** in the
   same folder, in config.ini format (`[Section]` and `key = value`); they are read at every start and win over
   everything else. Restart the add-on after a change. `README.txt` there says the same.
+- **Set again at every start:** *Commands → Enable / Disable*, *Extra config lines* and `override.ini` win over the
+  Plugins page at every start of the add-on (also an automatic one at night). A plugin card shows such a setting under
+  its description (*Set again at every start of the add-on ...*, with where it comes from), so it is clear why a change
+  on the card does not last. Remove it there to manage it on the card.
 - To copy the file (and the database) out, or to move the bot to another Home Assistant: see *Moving the bot* below.
 
 **Translations** are built into the add-on (English, Dutch, German, French and Danish for everything this add-on adds; Danish also covers the bot's own texts, except the long joke lists). Pick the

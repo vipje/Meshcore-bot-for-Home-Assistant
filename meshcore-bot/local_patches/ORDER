@@ -232,3 +232,6 @@ patch_greeter_language.py
 
 # Greeter: the greeting as a DM to the new person (card option, default DM; fallback channel or nothing).
 patch_greeter_dm.py
+
+# Plugins page: a card says which of its settings an add-on option or override.ini sets again at every start (issue #1).
+patch_startup_overrides.py

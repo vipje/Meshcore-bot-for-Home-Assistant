@@ -100,9 +100,9 @@ patch(
                 {"value": "word", "label": "When the command word is typed alone"},
                 {"value": "args", "label": "Alone or with arguments"},
             ],
-            "help": ("In a channel where the bot listens but runs no commands (see the add-on option "
-                     "Public channel), answer this command word with a pointer to the channels where "
-                     "commands do work."),
+            "help": ("In a hint channel (set on the ChannelHint card on this page, for example your public "
+                     "channel), answer this command word with a pointer to the channels where commands do work. "
+                     "The ChannelHint card must be on."),
         }
         hint_field["value"] = _read_typed(config, section, hint_field)
         fields.append(hint_field)

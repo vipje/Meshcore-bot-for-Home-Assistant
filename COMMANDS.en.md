@@ -47,7 +47,7 @@ Signs: **DM** = direct message only · **#f1** = in the #f1 channel or by DM · 
 |---|---|---|
 | `pad` | `pad` | The route of your message in one line: hops, km and repeaters (? = guess). |
 | `sig`<br><sub>also: signaal</sub> | `sig` | SNR, RSSI and hops of your message with a verdict (good/fair/weak). Handy when tuning an antenna. |
-| `path`<br><sub>also: decode, route</sub> | `path  /  path 4a,c2,8c` | Long version of the route: every repeater on its own line. Long replies get (1/2), (2/2); *Max hops shown* on the *path* card makes it shorter. |
+| `path`<br><sub>also: decode, route</sub> | `path  /  path 4a,c2,8c` | Long version of the route: every repeater on its own line. Long replies get (1/2), (2/2). With *Max hops shown* on the *path* card it is always one message: that many hops, or fewer when they do not fit, and "+N more hops". |
 | `trace`<br><sub>also: tracer, tracert</sub> | `trace [path]` | Trace along a path (there and back), with the signal per step. Without a path: your message's path there and back. Long paths (many hops) fail more often; `tracer da,69` tries a short stretch. |
 | `discover` | `discover` | The repeaters the bot hears directly (0 hops), best signal first. Sends nothing over the radio itself. |
 | `multitest`<br><sub>also: mt</sub> | `multitest` | Listens for 6 seconds and shows every route your message came in by. |

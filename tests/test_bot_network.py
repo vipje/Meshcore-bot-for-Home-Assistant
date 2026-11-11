@@ -240,6 +240,23 @@ rs = Service(rb)
 st = asyncio.run(rs.radio_stats())
 check(st["nf"] == -108 and st["rssi"] == -92 and st["snr"] == 7.25 and st["txa"] == 1.5 and st["rxa"] == 9.0 and st["bat"] == 4100
       and st["rcv"] == 5000 and st["ftx"] == 200, f"radio: ruisvloer, RSSI/SNR, airtime in % van de uptime, batterij, pakkettellers ({st})")
+# radio-uptime gaat na 49,7 dagen terug naar 0 (32-bit ms), airtime-tellers niet: geen airtime boven 100 %
+_core, _radio = FakeCommands.get_stats_core, FakeCommands.get_stats_radio
+
+
+async def _wrapped_core(self):
+    return Ev({"battery_mv": 4100, "uptime_secs": 105263, "errors": 0, "queue_len": 0})
+
+
+async def _wrapped_radio(self):
+    return Ev({"noise_floor": -120, "last_rssi": -63, "last_snr": 11.75, "tx_air_secs": 8344, "rx_air_secs": 670086})
+
+
+FakeCommands.get_stats_core, FakeCommands.get_stats_radio = _wrapped_core, _wrapped_radio
+st = asyncio.run(rs.radio_stats())
+check(st["rup"] == 105263 and 0 < st["rxa"] < 100 and st["rxa"] == round(100.0 * 670086 / (105263 + 4294967), 2),
+      f"radio-uptime rondgegaan (49,7 d): airtime telt de rondes mee, geen 636 % ({st.get('rxa')})")
+FakeCommands.get_stats_core, FakeCommands.get_stats_radio = _core, _radio
 info = asyncio.run(rs.data("I"))
 check(info["fw"] == "1.11.0" and info["mdl"] == "Heltec V3" and info["node"] == MY_KEY[:12] and info["cr"] == 8 and info["f"] == 869.618,
       f"info: firmware, model, node-sleutel, CR ({info})")

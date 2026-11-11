@@ -45,7 +45,7 @@ Tekens: **DM** = alleen via een DM · **#f1** = in het kanaal #f1 of via DM · �
 |---|---|---|
 | `pad` | `pad` | De route van je bericht in één regel: hops, km en repeaters (? = gok). |
 | `sig`<br><sub>ook: signaal</sub> | `sig` | SNR, RSSI en hops van je bericht met een oordeel (goed/redelijk/zwak). Handig bij antenne-tuning. |
-| `path`<br><sub>ook: decode, route</sub> | `path  /  path 4a,c2,8c` | Lange versie van de route: elke repeater op een eigen regel. Lange antwoorden krijgen (1/2), (2/2); op de kaart *path* kan *Max hops shown* het korter maken. |
+| `path`<br><sub>ook: decode, route</sub> | `path  /  path 4a,c2,8c` | Lange versie van de route: elke repeater op een eigen regel. Lange antwoorden krijgen (1/2), (2/2). Met *Max hops shown* op de kaart *path* is het altijd één bericht: die hops, of minder als ze niet passen, en "+N more hops". |
 | `trace`<br><sub>ook: tracer, tracert</sub> | `trace [pad]` | Trace langs een pad (heen en terug), met signaal per stap. Zonder pad: jouw berichtpad heen en terug. Lange paden (veel hops) lukken minder vaak; `tracer da,69` probeert een kort stuk. |
 | `discover`<br><sub>ook: buren</sub> | `discover` | De repeaters die de bot direct hoort (0 hops), beste signaal eerst. Verstuurt zelf niets over de radio. |
 | `multitest`<br><sub>ook: mt</sub> | `multitest` | Luistert 6 seconden en toont alle routes waarlangs je bericht binnenkwam. |

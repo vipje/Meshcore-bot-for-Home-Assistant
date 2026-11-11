@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.6.2
+
+- **path** (GitHub issue #1): with *Max hops shown* set on the path card the reply is now always one message. When that
+  many hops do not fit (long repeater names), fewer are shown and the rest is counted in "+N more hops". Before, it was
+  split into two messages anyway.
+- **Plugins page** (issue #1, "plugins switch themselves off over night"): *Commands → Enable / Disable*, *Extra config
+  lines* and `override.ini` are applied again at every start of the add-on and win over the card. A card now shows such
+  a setting under its description, with where it comes from, so it is clear why a change there does not last.
+- **Channel hints** (issue #5): the help text of *Hint in the public channel* on every command card pointed to an
+  add-on option that no longer exists; it now points to the **ChannelHint** card. The log says when a hint was sent and
+  why one was not (too soon, the same person, another bot active or answering first). Log lines in English.
+- **Bots page**: this bot's own row always shows "just now" under *Last heard* (it showed the time of its last hourly
+  status, for example "32 min ago"); the time of that status is in the tooltip on the name.
+- **Airtime above 100 %** on the Bots page (for example 636 %): the radio's uptime counter starts again at 0 after 49.7
+  days, its airtime counters do not. The bot now adds those rounds back, so receive and transmit airtime stay right.
+
 ## 1.6.1
 
 - Bot network: right after the machine started (less than a minute), a refresh of the known bots and channels could be

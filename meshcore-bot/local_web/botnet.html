@@ -185,13 +185,15 @@
             if (p.self) nameCell.appendChild(el('span', 'this bot', 'badge bg-primary ms-2'));
             if (p.trusted) nameCell.appendChild(el('span', 'trusted', 'badge bg-success ms-2'));
             nameCell.title = ['first seen ' + new Date(p.first_seen * 1000).toLocaleDateString(), p.id ? 'id ' + p.id : '',
-                              s.up ? 'bot up ' + Math.round(s.up / 3600) + ' h' : '', s.nm === '1' ? 'night mode' : ''].filter(Boolean).join(' · ');
+                              s.up ? 'bot up ' + Math.round(s.up / 3600) + ' h' : '', s.nm === '1' ? 'night mode' : '',
+                              p.self && p.last_status ? 'status ' + ago(p.last_status, d.generated_at) : ''].filter(Boolean).join(' · ');
             tr.appendChild(nameCell);
             const air = (s.txa !== undefined || s.rxa !== undefined) ? (s.txa || '0') + ' / ' + (s.rxa || '0') + ' %' : '-';
             const nbs = (p.neighbors || []).length;
             const cells = [p.region || '-', p.version || '-', p.radio || '-', [info.mdl, info.fw].filter(Boolean).join(' · ') || '-',
                            s.n || '-', s.p || '-', s.m || '-', s.c || '-', s.dx || '-',
-                           s.nf !== undefined ? s.nf + ' dBm' : '-', air, nbs || '-', ago(p.last_seen, d.generated_at)];
+                           s.nf !== undefined ? s.nf + ' dBm' : '-', air, nbs || '-',
+                           p.self ? 'just now' : ago(p.last_seen, d.generated_at)];   // this bot runs: its row is never old
             cells.forEach(function (v, i) {
                 const td = el('td', v, i >= 4 ? 'text-end' : '');
                 if (i === 11 && nbs) {

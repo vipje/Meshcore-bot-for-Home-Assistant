@@ -4,7 +4,9 @@
 A long path reply is split into several messages, 3 s apart. Over the mesh they often arrive out of order, or only the
 last one arrives (GitHub issue #1). Now:
 - every part ends with (1/2), (2/2), ... so the reader sees the order and whether one is missing;
-- the path card has "Max hops shown" (0 = all): a longer path shows the first hops and "+N more".
+- the path card has "Max hops shown" (0 = all): a longer path shows the first hops and "+N more". With it set, the
+  reply is always one message: when those hops do not fit (long repeater names), fewer are shown (GitHub issue #1,
+  1.6.2: "Max hops shown 5" still gave two messages).
 """
 import pathlib
 import sys
@@ -53,11 +55,20 @@ new = r"""        lines = response.split('\n')
             max_hops = int(self.bot.config.get('Path_Command', 'max_hops_shown', fallback='0') or 0)
         except ValueError:
             max_hops = 0
-        if max_hops > 0 and len(lines) > max_hops:
-            lines = lines[:max_hops] + [self.translate('commands.path.more_hops', n=len(lines) - max_hops)]
-        if len(lines) != len(response.split('\n')) and self._count_byte_length('\n'.join(lines)) + prefix_len <= max_length:
-            await self.send_response(message, prefix + '\n'.join(lines))
-            return
+        if max_hops > 0:
+            # (add-on) one message: fewer hops when they do not fit, the rest counted in "+N more"
+            hops = lines
+            shown = min(max_hops, len(hops))
+            while True:
+                lines = hops[:shown]
+                if shown < len(hops):
+                    lines = lines + [self.translate('commands.path.more_hops', n=len(hops) - shown)]
+                if shown <= 1 or self._count_byte_length('\n'.join(lines)) + prefix_len <= max_length:
+                    break
+                shown -= 1
+            if self._count_byte_length('\n'.join(lines)) + prefix_len <= max_length:
+                await self.send_response(message, prefix + '\n'.join(lines))
+                return
         # (add-on) parts of whole lines, each ending with (1/2), (2/2), ... (room kept for that tag)
         tag_room = 8
         parts, current = [], ""
