@@ -738,12 +738,9 @@ Commands for everyone on the mesh. Each has a card on the Plugins page with an o
 - **The `test` reply** can be changed on the **test** card: *Response format* (empty = the standard
   `ack @[{sender}]{phrase_part} | {connection_info} | Received at: {timestamp}`). The card wins over a `test` keyword below.
   For example `ack @[{sender}] | {hops_label} | SNR {snr} dB | to Chicago, IL` keeps it to one message and says where the
-  bot is.
-- **Keyword replies**: one `keyword = "reply"` per entry. Placeholders (also for the test card's *Response format*):
-  `{sender}`, `{connection_info}` (route, bytes per hop when known, SNR, RSSI), `{path}` (route only), `{hops}` (a number),
-  `{hops_label}` ("3 hops"), `{bytes_per_hop}` (1, 2 or 3), `{snr}` and `{rssi}` (numbers, add the unit yourself),
-  `{timestamp}`, `{elapsed}` (travel time), `{path_distance}` and `{firstlast_distance}` (when the repeaters' positions are
-  known), `{phrase_part}` (": " plus the text after `test`). `help` is handled before
+  bot is. All placeholders: see [Reply placeholders](https://github.com/vipje/Meshcore-bot-for-Home-Assistant/blob/main/PLACEHOLDERS.en.md).
+- **Keyword replies**: one `keyword = "reply"` per entry, with the placeholders from
+  [Reply placeholders](https://github.com/vipje/Meshcore-bot-for-Home-Assistant/blob/main/PLACEHOLDERS.en.md). `help` is handled before
   keywords, so a `help` keyword is never used: set your own help text on the **help** card instead. Without a `ping` keyword,
   `ping` answers "Pong!" with the hops, the repeater it came via, SNR, RSSI, travel time and the bot's time, in the
   sender's language (unknown parts are left out).
@@ -812,6 +809,10 @@ and need internet.
 | `wegwerk <place>` | Roadworks near a place |
 | `whois <name or key>` | Contact card of a known node |
 | `dx`, `xp`, `badge`, `herinner`, `voorspel`, `pad`, `sig`, `meshkaart`, `karma`, `checkin`, `prikbord`, `noodnummers`, `weetje`, `peiling`, `buien` | See *Community commands and games* above |
+
+## Reply placeholders
+
+Every placeholder for the test card's *Response format* and for keyword replies, with examples and the filters, is on its own page: [PLACEHOLDERS.en.md](https://github.com/vipje/Meshcore-bot-for-Home-Assistant/blob/main/PLACEHOLDERS.en.md) (in Dutch: [PLACEHOLDERS.md](https://github.com/vipje/Meshcore-bot-for-Home-Assistant/blob/main/PLACEHOLDERS.md)).
 
 ## Moving the bot (export and import)
 

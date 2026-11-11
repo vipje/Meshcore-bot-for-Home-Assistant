@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.6.1
+
+- Bot network: right after the machine started (less than a minute), a refresh of the known bots and channels could be
+  skipped, so a bot that just reported in was not recognised yet. Seen as a test that failed now and then on GitHub.
+- Documentation: a page of its own, **PLACEHOLDERS.en.md** (Dutch: PLACEHOLDERS.md), with every placeholder for the test card and keyword
+  replies, an example of each, the test card's filters (show a part only when it has a value), and what happens with a
+  misspelled one (GitHub issue #4). The Keyword replies option points to it.
+
 ## 1.6.0
 
 - **Long replies** (new card **LongReplies**, off by default, GitHub issue #3): a reply that is too long for one radio

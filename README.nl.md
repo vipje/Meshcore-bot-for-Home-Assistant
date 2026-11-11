@@ -114,6 +114,9 @@ van je bot, sleutels, kanalen, het adres van je radio, je locatie of iets van de
 De volledige lijst met alle commando's en wat ze doen staat in **[COMMANDS.md](COMMANDS.md)**. Op de mesh kun je ook
 `help` typen: de bot stuurt dan de link naar die lijst, en `help <commando>` geeft uitleg over één commando.
 
+De plaatsaanduidingen voor het `test`-antwoord en keyword-antwoorden (`{sender}`, `{snr}`, `{hops_label}`, ...) staan in
+**[PLACEHOLDERS.md](PLACEHOLDERS.md)**.
+
 ## Met dank aan
 
 Dit project bouwt voort op het werk van anderen:

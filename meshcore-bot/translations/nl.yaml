@@ -137,7 +137,7 @@ configuration:
     fields:
       keywords:
         name: Keyword-antwoorden
-        description: 'Eén antwoord per regel als keyword = "antwoordtekst". Ondersteunt plaatsaanduidingen zoals {sender}, {connection_info} en {timestamp}.'
+        description: 'Eén antwoord per regel als keyword = "antwoordtekst". Ondersteunt plaatsaanduidingen zoals {sender}, {connection_info} en {timestamp}; de volledige lijst staat in PLACEHOLDERS.md op GitHub (link in het tabblad Documentatie).'
       extra_config:
         name: Extra config-regels
         description: "Eén aanpassing per regel als Sectie.sleutel = waarde (bijvoorbeeld Sports_Command.enabled = true). Wordt als laatste toegepast en wint dus van alle andere opties. Zie config.ini.example in het meshcore-bot-project voor alle instellingen."

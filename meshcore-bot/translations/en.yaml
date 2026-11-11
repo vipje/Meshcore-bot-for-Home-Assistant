@@ -137,7 +137,7 @@ configuration:
     fields:
       keywords:
         name: Keyword replies
-        description: 'One reply per entry as keyword = "reply text". Supports placeholders such as {sender}, {connection_info} and {timestamp}.'
+        description: 'One reply per entry as keyword = "reply text". Supports placeholders such as {sender}, {connection_info} and {timestamp}; the full list is in PLACEHOLDERS.en.md on GitHub (link in the Documentation tab).'
       extra_config:
         name: Extra config lines
         description: "One override per entry as Section.key = value (for example Sports_Command.enabled = true). Applied last, so it wins over every other option. See config.ini.example in the meshcore-bot project for all settings."

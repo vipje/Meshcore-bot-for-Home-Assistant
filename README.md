@@ -114,6 +114,9 @@ on the dashboard's Plugins page to send nothing at all.
 The full list of commands is in **[COMMANDS.en.md](COMMANDS.en.md)** (in Dutch: [COMMANDS.md](COMMANDS.md)). On the mesh you can also type `help`: the bot
 sends the link to that list, and `help <command>` explains one command.
 
+The placeholders you can use in the `test` reply and in keyword replies (`{sender}`, `{snr}`, `{hops_label}`, ...) are in
+**[PLACEHOLDERS.en.md](PLACEHOLDERS.en.md)** (in Dutch: [PLACEHOLDERS.md](PLACEHOLDERS.md)).
+
 ## Thanks
 
 This project builds on the work of others:

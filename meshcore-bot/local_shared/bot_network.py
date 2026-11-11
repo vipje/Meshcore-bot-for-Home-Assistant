@@ -270,7 +270,9 @@ def receive_mqtt(bot: Any, payload: bytes, own_name: str = "", now: Optional[flo
 
 def _load(bot: Any) -> None:
     now = time.monotonic()
-    if now - _cache["at"] < CACHE_S:
+    # at == 0.0 means "reload now" (set after a change, and by the tests). time.monotonic() counts from boot, so on a
+    # machine that started less than CACHE_S seconds ago "now - 0.0" alone would still look fresh.
+    if _cache["at"] and now - _cache["at"] < CACHE_S:
         return
     _cache["at"] = now
     bots, channels = set(), set()
