@@ -35,7 +35,7 @@
                         <th scope="col">Bot</th><th scope="col">Region</th><th scope="col">Version</th>
                         <th scope="col" title="Frequency (MHz) / SF / bandwidth (kHz) / CR">Radio</th>
                         <th scope="col">Device</th>
-                        <th scope="col" class="text-end" title="Nodes heard in 24 h: people / repeaters / rooms">Heard</th>
+                        <th scope="col" class="text-end" title="Nodes heard in 24 h: people (companions), repeaters, rooms">Heard</th>
                         <th scope="col" class="text-end" title="People who wrote in 24 h">Spoke</th>
                         <th scope="col" class="text-end" title="Channel messages in 24 h">Messages</th>
                         <th scope="col" class="text-end" title="Commands answered in 24 h">Commands</th>
@@ -200,6 +200,19 @@
                     td.title = p.neighbors.map(function (n) { return (n.name || n.key) + ' ' + (n.snr === null ? '?' : n.snr + ' dB'); }).join('\n');
                 }
                 if (i === 3 && info.node) td.title = 'node ' + info.node + (info.fwd ? ' · build ' + info.fwd : '');
+                // "24/198/5" read like a date: one icon per kind (people, repeaters, rooms) instead of slashes
+                const parts = i === 4 ? String(s.n || '').split('/') : [];
+                if (parts.length === 3) {
+                    td.replaceChildren();
+                    td.style.whiteSpace = 'nowrap';
+                    td.title = parts[0] + ' people (companions) · ' + parts[1] + ' repeaters · ' + parts[2] + ' rooms, heard in 24 h';
+                    [['fa-user', 'people'], ['fa-broadcast-tower', 'repeaters'], ['fa-door-open', 'rooms']].forEach(function (k, j) {
+                        const ic = el('i', null, 'fas ' + k[0] + ' text-muted ' + (j ? 'ms-2 ' : '') + 'me-1');
+                        ic.setAttribute('aria-label', k[1]);
+                        td.appendChild(ic);
+                        td.appendChild(document.createTextNode(parts[j]));
+                    });
+                }
                 tr.appendChild(td);
             });
             body.appendChild(tr);

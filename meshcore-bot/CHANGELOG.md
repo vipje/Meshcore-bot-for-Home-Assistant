@@ -1,6 +1,15 @@
 # Changelog
 
-## 1.6.2
+## 1.6.3
+
+- **Version number**: the add-on version is the release number again. 1.6.1 and 1.6.2 showed up in Home Assistant as
+  2.53.1 and 2.53.2 by mistake; this update brings it back to 1.6.3.
+- **Bots page**: the *Heard* column showed "24/198/5", which read like a date. It now shows an icon with the number of
+  people, repeaters and rooms heard in 24 h; the tooltip says it in words.
+- **Bots page**: bots on an older version (before 1.6.2) still send airtime over the radio uptime after it went round
+  (for example 574 %). The page now corrects that itself, in the table and in the chart.
+
+## 1.6.2 (add-on version 2.53.2)
 
 - **path** (GitHub issue #1): with *Max hops shown* set on the path card the reply is now always one message. When that
   many hops do not fit (long repeater names), fewer are shown and the rest is counted in "+N more hops". Before, it was
@@ -16,7 +25,7 @@
 - **Airtime above 100 %** on the Bots page (for example 636 %): the radio's uptime counter starts again at 0 after 49.7
   days, its airtime counters do not. The bot now adds those rounds back, so receive and transmit airtime stay right.
 
-## 1.6.1
+## 1.6.1 (add-on version 2.53.1)
 
 - Bot network: right after the machine started (less than a minute), a refresh of the known bots and channels could be
   skipped, so a bot that just reported in was not recognised yet. Seen as a test that failed now and then on GitHub.

@@ -333,7 +333,7 @@ def summary(bot: Any, now: Optional[float] = None) -> dict:
             out["peers"].append({"name": name, "version": version or "", "radio": radio or "", "region": region or "",
                                  "via": via or "radio", "self": via == "self", "id": bot_id(pk) if pk else "",
                                  "info": json.loads(info) if info else {}, "neighbors": links.get(name, []),
-                                 "status": json.loads(status) if status else {}, "first_seen": first, "last_seen": last,
+                                 "status": fix_airtime(json.loads(status)) if status else {}, "first_seen": first, "last_seen": last,
                                  "last_hello": hello, "last_status": stat, "messages": msgs, "trusted": _norm(name) in trust})
         for kind, value, n in conn.execute("SELECT kind, value, COUNT(DISTINCT from_name) FROM botnet_names GROUP BY kind, value ORDER BY 3 DESC, 2"):
             (out["channels"] if kind == "channel" else out["bots"]).append({"name": value, "reported_by": n})
@@ -352,6 +352,28 @@ def summary(bot: Any, now: Optional[float] = None) -> dict:
 
 
 HISTORY_FIELDS = ("nf", "txa", "rxa", "m", "p", "c")
+UPTIME_WRAP_S = 2 ** 32 // 1000   # the radio's uptime counter starts again at 0 after 49.7 days (see radio_stats)
+
+
+def fix_airtime(status: dict) -> dict:
+    """Older bots (before 1.6.2) send airtime over the wrapped radio uptime, for example 574 %. With "rup" in the status
+    the airtime seconds are known again: add the rounds back so it is right on this page for every bot."""
+    try:
+        up = float(status.get("rup") or 0)
+        txa, rxa = float(status.get("txa") or 0), float(status.get("rxa") or 0)
+    except (TypeError, ValueError, AttributeError):
+        return status
+    if up <= 0 or max(txa, rxa) <= 100:
+        return status
+    tx_s, rx_s = txa * up / 100.0, rxa * up / 100.0
+    real = up
+    while max(tx_s, rx_s) > real:
+        real += UPTIME_WRAP_S
+    out = dict(status)
+    for key, secs in (("txa", tx_s), ("rxa", rx_s)):
+        if status.get(key) is not None:
+            out[key] = round(100.0 * secs / real, 2)
+    return out
 
 
 def _number(v: Any) -> Optional[float]:
@@ -385,8 +407,8 @@ def history(bot: Any, days: Any = 7, now: Optional[float] = None) -> dict:
             series[key] = []
         for ts, data in items:
             try:
-                d = json.loads(data)
-            except ValueError:
+                d = fix_airtime(json.loads(data))
+            except (ValueError, AttributeError):
                 continue
             series["t"].append(ts)
             for key in HISTORY_FIELDS:

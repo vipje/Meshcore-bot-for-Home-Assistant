@@ -257,6 +257,13 @@ st = asyncio.run(rs.radio_stats())
 check(st["rup"] == 105263 and 0 < st["rxa"] < 100 and st["rxa"] == round(100.0 * 670086 / (105263 + 4294967), 2),
       f"radio-uptime rondgegaan (49,7 d): airtime telt de rondes mee, geen 636 % ({st.get('rxa')})")
 FakeCommands.get_stats_core, FakeCommands.get_stats_radio = _core, _radio
+fix_airtime = N.fix_airtime
+old_bot = {"rup": 105263, "txa": round(100.0 * 7550 / 105263, 2), "rxa": round(100.0 * 604600 / 105263, 2), "m": 3}
+fixed = fix_airtime(old_bot)
+check(fixed["rxa"] < 100 and abs(fixed["rxa"] - 100.0 * 604600 / (105263 + 4294967)) < 0.05 and fixed["m"] == 3
+      and fix_airtime({"rup": 5000, "txa": 1.0, "rxa": 20.0}) == {"rup": 5000, "txa": 1.0, "rxa": 20.0}
+      and fix_airtime({"rxa": 574.0}) == {"rxa": 574.0},
+      f"oudere bot (voor 1.6.2) met 574 %: pagina rekent de rondes erbij, gewone waarden blijven ({fixed})")
 info = asyncio.run(rs.data("I"))
 check(info["fw"] == "1.11.0" and info["mdl"] == "Heltec V3" and info["node"] == MY_KEY[:12] and info["cr"] == 8 and info["f"] == 869.618,
       f"info: firmware, model, node-sleutel, CR ({info})")
