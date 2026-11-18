@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.6.4
+
+- **AnalyzerFeed switched off**: the EU Meshcore Analyzer (meshcore-analyzer.eu, cornmeister.nl, meshcorenetz.de) no
+  longer allows automated collection from its site or its API (see https://meshcore-analyzer.eu/llms.txt). The add-on
+  does not read it any more, whatever the AnalyzerFeed card says, and the Channel radar no longer fetches its community
+  channel list from there. For data, ask in #analyzer-requests on the analyzer's Discord. Publishing to the analyzer as
+  an MQTT observer is not affected.
+- **airplanes** (GitHub issue #6): a **Units** choice on the airplanes card: metric (km, m, km/h, the default), imperial
+  (mi, ft, mph) or aviation (nm, ft, kt). The replies and what people type after the command (`radius=`, `alt=`,
+  `speed=`) use those units.
+
 ## 1.6.3
 
 - **Version number**: the add-on version is the release number again. 1.6.1 and 1.6.2 showed up in Home Assistant as

@@ -15,6 +15,9 @@ import time
 from datetime import timedelta
 from typing import Any, Optional
 
+# Sites whose owners do not allow automated collection: never fetched, also when an older card still points there.
+BLOCKED_HOSTS = ("meshcore-analyzer.eu", "cornmeister.nl", "meshcorenetz.de")
+
 from ..channel_radar import (COMMUNITY_META, COMMUNITY_URL, DEFAULT_NAMES, build_table, card_keys, community_names, dashboard_keys,
                              dashboard_names, ensure_tables, generated_names, identify, names_signature, parse_community, radio_channels,
                              radio_signature, record)
@@ -47,7 +50,8 @@ class ChannelRadarService(BaseServicePlugin):
                   "EU Meshcore Analyzer and the Dutch MeshCore toolbox show), so the radar recognises them at once. Only the "
                   "names are kept.")},
         {"key": "community_url", "label": "Community list address", "type": "str", "default": COMMUNITY_URL,
-         "help": "Where the list comes from (https). The Dutch MeshCore toolbox: https://toolbox.dutchmeshcore.nl/channels-data"},
+         "help": ("Where the list comes from (https). meshcore-analyzer.eu no longer allows automated collection, so the "
+                  "list is not fetched from there any more.")},
     ]
 
     def __init__(self, bot: Any):
@@ -84,6 +88,11 @@ class ChannelRadarService(BaseServicePlugin):
 
     async def fetch_community(self) -> int:
         """The community channel list (names only) into bot_metadata; the next scan recognises them."""
+        from urllib.parse import urlparse
+        host = (urlparse(self.community_url).hostname or "").lower()
+        if any(host == h or host.endswith("." + h) for h in BLOCKED_HOSTS):
+            # (add-on) the analyzer forbids scheduled jobs against its /api (https://meshcore-analyzer.eu/llms.txt)
+            raise PermissionError("meshcore-analyzer.eu and its community sites no longer allow automated collection from the site or its /api (see https://meshcore-analyzer.eu/llms.txt); for data, ask in #analyzer-requests on their Discord")
         import aiohttp
         import json as _json
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60),

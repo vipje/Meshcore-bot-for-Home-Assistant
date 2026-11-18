@@ -12,6 +12,10 @@ everywhere internal filtering/sorting already also has a `_distance_km` twin
 of `_distance_nm` computed alongside it (see _filter_aircraft), so switching
 display to km doesn't touch the nm-based radius filter/sort logic at all.
 
+The airplanes card has a Units choice (GitHub issue #6): metric (km, m, km/h, the
+default), imperial (mi, ft, mph) or aviation (nm, ft, kt). What the user types
+(radius=, alt=, speed=) is in those same units.
+
 This command is disabled by default in this add-on (airplanes_enabled: false
 in config.yaml) - converted proactively while it's off rather than left with
 mismatched units for whenever it gets turned on.
@@ -41,7 +45,7 @@ FILE = "modules/commands/airplanes_command.py"
 patch(
     FILE,
     '''{"name": "radius", "description": "Search radius in nautical miles (default: 25)"},''',
-    '''{"name": "radius", "description": "Search radius in kilometers (default: 46)"},''',
+    '''{"name": "radius", "description": "Search radius in the units set on the card: km, mi or nm (default: 46 km)"},''',
 )
 
 # 2. Web-viewer settings-panel metadata for default_radius.
@@ -52,7 +56,12 @@ patch(
          "help": "Default search radius in nautical miles (max 250)."},''',
     '''        {"key": "default_radius", "label": "Default radius", "type": "float",
          "min": 2, "max": 463, "default": 46, "unit": "km",
-         "help": "Default search radius in kilometers (max ~463, the API's 250nm limit)."},''',
+         "help": "Default search radius in kilometers (max ~463, the API's 250nm limit)."},
+        {"key": "units", "label": "Units", "type": "enum", "default": "metric",
+         "options": [{"value": "metric", "label": "Metric (km, m, km/h)"},
+                     {"value": "imperial", "label": "Imperial (mi, ft, mph)"},
+                     {"value": "aviation", "label": "Aviation (nm, ft, kt)"}],
+         "help": "Units in the replies and for what people type after the command (radius=, alt=, speed=)."},''',
 )
 
 # 3. Config read: default_radius is now km; convert once to the nm the API call needs.
@@ -63,7 +72,22 @@ patch(
             'Airplanes_Command', 'default_radius', fallback=46, value_type='float'
         )
         # API's point-radius endpoint takes nautical miles; config/CLI arg is km.
-        self.default_radius = self.default_radius_km * 0.539957""",
+        self.default_radius = self.default_radius_km * 0.539957
+        # (add-on) Units on the card (GitHub issue #6): metric, imperial or aviation.
+        # *_in: what the user types -> API unit (nm, ft, kt); *_out: API unit -> what is shown.
+        self.units = str(self.get_config_value('Airplanes_Command', 'units', fallback='metric') or 'metric').strip().lower()
+        if self.units == 'imperial':
+            self._dist_in, self._dist_out, self._dist_label = 0.868976, 1.150779, 'mi'
+            self._alt_in, self._alt_out, self._alt_label = 1.0, 1.0, 'ft'
+            self._spd_in, self._spd_out, self._spd_label = 1 / 1.150779, 1.150779, 'mph'
+        elif self.units == 'aviation':
+            self._dist_in, self._dist_out, self._dist_label = 1.0, 1.0, 'nm'
+            self._alt_in, self._alt_out, self._alt_label = 1.0, 1.0, 'ft'
+            self._spd_in, self._spd_out, self._spd_label = 1.0, 1.0, 'kt'
+        else:
+            self._dist_in, self._dist_out, self._dist_label = 0.539957, 1.852, 'km'
+            self._alt_in, self._alt_out, self._alt_label = 1 / 0.3048, 0.3048, 'm'
+            self._spd_in, self._spd_out, self._spd_label = 1 / 1.852, 1.852, 'km/h'""",
 )
 
 # 4. 'radius=N' argument: N is now km, converted to nm before the existing
@@ -77,11 +101,11 @@ patch(
                     filters['radius'] = min(250, max(1, filters['radius']))  # Clamp 1-250nm
                 except (ValueError, IndexError):
                     pass""",
-    """            # Radius (user types km; API's point-radius endpoint wants nm)
+    """            # Radius (user types km or mi; API's point-radius endpoint wants nm)
             if arg_lower.startswith('radius='):
                 try:
-                    radius_km = float(arg_lower.split('=')[1])
-                    filters['radius'] = min(250, max(1, radius_km * 0.539957))  # Clamp 1-250nm (API limit)
+                    radius_user = float(arg_lower.split('=')[1])
+                    filters['radius'] = min(250, max(1, radius_user * self._dist_in))  # Clamp 1-250nm (API limit)
                 except (ValueError, IndexError):
                     pass""",
 )
@@ -103,16 +127,16 @@ patch(
                         filters['alt_min'] = float(alt_str)
                 except (ValueError, IndexError):
                     pass""",
-    """            # Altitude range (user types meters; API altitude fields are feet)
+    """            # Altitude range (user types m or ft; API altitude fields are feet)
             elif arg_lower.startswith('alt='):
                 try:
                     alt_str = arg_lower.split('=')[1]
                     if '-' in alt_str:
                         parts = alt_str.split('-')
-                        filters['alt_min'] = float(parts[0]) / 0.3048
-                        filters['alt_max'] = float(parts[1]) / 0.3048
+                        filters['alt_min'] = float(parts[0]) * self._alt_in
+                        filters['alt_max'] = float(parts[1]) * self._alt_in
                     else:
-                        filters['alt_min'] = float(alt_str) / 0.3048
+                        filters['alt_min'] = float(alt_str) * self._alt_in
                 except (ValueError, IndexError):
                     pass""",
 )
@@ -133,16 +157,16 @@ patch(
                         filters['speed_min'] = float(speed_str)
                 except (ValueError, IndexError):
                     pass""",
-    """            # Speed range (user types km/h; API's `gs` field is knots)
+    """            # Speed range (user types km/h or mph; API's `gs` field is knots)
             elif arg_lower.startswith('speed='):
                 try:
                     speed_str = arg_lower.split('=')[1]
                     if '-' in speed_str:
                         parts = speed_str.split('-')
-                        filters['speed_min'] = float(parts[0]) / 1.852
-                        filters['speed_max'] = float(parts[1]) / 1.852
+                        filters['speed_min'] = float(parts[0]) * self._spd_in
+                        filters['speed_max'] = float(parts[1]) * self._spd_in
                     else:
-                        filters['speed_min'] = float(speed_str) / 1.852
+                        filters['speed_min'] = float(speed_str) * self._spd_in
                 except (ValueError, IndexError):
                     pass""",
 )
@@ -151,7 +175,7 @@ patch(
 patch(
     FILE,
     """            alt_str = f"{int(alt):,}ft"  # Add comma separator for readability""",
-    """            alt_str = f"{int(alt * 0.3048):,}m"  # Add comma separator for readability (feet -> meters)""",
+    """            alt_str = f"{int(alt * self._alt_out):,}{self._alt_label}"  # Add comma separator for readability (ft -> m or ft)""",
 )
 
 # 5b. Single-aircraft detail view: speed kt -> km/h. `gs` (ground speed) comes
@@ -163,7 +187,7 @@ patch(
         speed_str = f"{int(gs)}kt" if gs is not None else "N/A"''',
     '''        # Speed
         gs = aircraft.get('gs')
-        speed_str = f"{int(gs * 1.852)}km/h" if gs is not None else "N/A"''',
+        speed_str = f"{int(gs * self._spd_out)}{self._spd_label}" if gs is not None else "N/A"''',
 )
 
 # 6. Single-aircraft detail view: distance nm -> km.
@@ -173,20 +197,20 @@ patch(
         distance_nm = aircraft.get('_distance_nm', 0)
         bearing_cardinal = aircraft.get('_bearing_cardinal', 'N')""",
     """        # Distance and bearing (most important for overhead command - put first)
-        distance_km = aircraft.get('_distance_km', 0)
+        distance_km = aircraft.get('_distance_nm', 0) * self._dist_out  # (add-on) km or mi
         bearing_cardinal = aircraft.get('_bearing_cardinal', 'N')""",
 )
 patch(
     FILE,
     '''        response_parts.append(f"{distance_nm:.1f}nm {bearing_cardinal}")''',
-    '''        response_parts.append(f"{distance_km:.1f}km {bearing_cardinal}")''',
+    '''        response_parts.append(f"{distance_km:.1f}{self._dist_label} {bearing_cardinal}")''',
 )
 
 # 7. Aircraft-list view: altitude ft -> m.
 patch(
     FILE,
     "                alt_str = f\"{int(alt)}ft\"",
-    "                alt_str = f\"{int(alt * 0.3048)}m\"",
+    "                alt_str = f\"{int(alt * self._alt_out)}{self._alt_label}\"",
 )
 
 # 7b. Aircraft-list view: speed kt -> km/h.
@@ -195,7 +219,7 @@ patch(
     '''            gs = aircraft.get('gs')
             speed_str = f"{int(gs)}kt" if gs is not None else "N/A"''',
     '''            gs = aircraft.get('gs')
-            speed_str = f"{int(gs * 1.852)}km/h" if gs is not None else "N/A"''',
+            speed_str = f"{int(gs * self._spd_out)}{self._spd_label}" if gs is not None else "N/A"''',
 )
 
 # 8. Aircraft-list view: distance nm -> km.
@@ -205,8 +229,8 @@ patch(
             bearing_cardinal = aircraft.get('_bearing_cardinal', 'N')
 
             line = f"{callsign} {alt_str} {speed_str} {distance_nm:.1f}nm {bearing_cardinal}\"""",
-    """            distance_km = aircraft.get('_distance_km', 0)
+    """            distance_km = aircraft.get('_distance_nm', 0) * self._dist_out  # (add-on) km or mi
             bearing_cardinal = aircraft.get('_bearing_cardinal', 'N')
 
-            line = f"{callsign} {alt_str} {speed_str} {distance_km:.1f}km {bearing_cardinal}\"""",
+            line = f"{callsign} {alt_str} {speed_str} {distance_km:.1f}{self._dist_label} {bearing_cardinal}\"""",
 )

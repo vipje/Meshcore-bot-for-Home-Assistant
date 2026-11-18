@@ -200,7 +200,7 @@ session starts, for example "The qualifying starts in 2:15 h".
 | `hfcond` | `hfcond` | HF band conditions for radio amateurs. 🌐 |
 | `solarforecast`<br><sub>also: sf</sub> | `sf Heerlen 4000` | Expected yield of solar panels. 🌐 |
 | `satpass` | `satpass iss` | When a satellite passes over. 🌐 |
-| `airplanes`<br><sub>also: planes, aircraft</sub> | `airplanes`  /  `airplanes here`  /  `airplanes 50.9,5.9` | Aircraft above the bot (or a place), with altitude and type. Off by default (card *airplanes*). 🌐 |
+| `airplanes`<br><sub>also: planes, aircraft</sub> | `airplanes`  /  `airplanes here`  /  `airplanes 50.9,5.9` | Aircraft above the bot (or a place), with altitude and type. Off by default (card *airplanes*). Units are chosen on that card: metric, imperial or aviation. 🌐 |
 | `alert`<br><sub>also: incident</sub> | `alert <place>` | Active emergency incidents (PulsePoint, mainly US). 🌐 |
 
 ## Fun

@@ -9,6 +9,10 @@ on the card (the IATA codes observers use, e.g. MST for South Limburg, AMS, CGN,
 tables as the MQTT observers (modules/observers.py): Radar -> Observers shows them, and their group messages count on the
 Channel radar (once per packet, also when the bot heard it itself). Only reads: nothing is published, nothing goes over
 the radio, nothing is decrypted. Be kind to a free community service: the defaults are deliberately slow.
+
+SWITCHED OFF (November 2026): the analyzer no longer allows automated collection from its site or /api
+(https://meshcore-analyzer.eu/llms.txt: no scrapers or scheduled jobs). start() never runs the loop any more, whatever
+the card says. Publishing to the analyzer as an MQTT observer (ObserverFeed / MQTT observers) is not affected.
 """
 import asyncio
 import time
@@ -17,6 +21,7 @@ from typing import Any, Optional
 
 from .base_service import BaseServicePlugin
 
+POLICY = ("meshcore-analyzer.eu and its community sites no longer allow automated collection from the site or its /api (see https://meshcore-analyzer.eu/llms.txt); for data, ask in #analyzer-requests on their Discord.")
 USER_AGENT = "meshcore-bot-ha AnalyzerFeed (github.com/vipje/Meshcore-bot-for-Home-Assistant)"
 FIRST_WINDOW_S = 600        # at the start: only the last 10 minutes of packets
 SEEN_MAX = 20000
@@ -25,7 +30,8 @@ SEEN_MAX = 20000
 class AnalyzerFeedService(BaseServicePlugin):
     config_section = "AnalyzerFeed"
     name = "analyzerfeed"
-    description = "Observers of the regions you choose (e.g. MST) from the public EU Meshcore Analyzer, for Radar -> Observers and the Channel radar"
+    description = ("Switched off: the EU Meshcore Analyzer no longer allows automated collection from its site or API. "
+                   "For data, ask in #analyzer-requests on their Discord. Publishing as an MQTT observer still works.")
 
     settings_schema = [
         {"key": "regions", "label": "Regions", "type": "str", "default": "",
@@ -75,7 +81,10 @@ class AnalyzerFeedService(BaseServicePlugin):
     # ------------------------------------------------------------------ lifecycle
     async def start(self) -> None:
         self._running = True
-        if not self.regions and not self.lookup_names:
+        # (add-on) the analyzer forbids scheduled jobs against its site and /api: never poll it, whatever the card says
+        self.logger.info("AnalyzerFeed: off. " + POLICY)
+        return
+        if not self.regions and not self.lookup_names:  # noqa: unreachable - kept for when the analyzer offers a feed
             self.logger.info("AnalyzerFeed: geen regio's en geen namen opzoeken op de kaart, niets te doen")
             return
         self._task = asyncio.create_task(self._loop())

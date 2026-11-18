@@ -198,7 +198,7 @@ volgende sessie begint, bijvoorbeeld "Over 2:15 uur begint de kwalificatie".
 | `hfcond` | `hfcond` | HF-bandcondities voor zendamateurs. 🌐 |
 | `solarforecast`<br><sub>ook: sf</sub> | `sf Heerlen 4000` | Verwachte opbrengst van zonnepanelen. 🌐 |
 | `satpass` | `satpass iss` | Wanneer een satelliet overkomt. 🌐 |
-| `airplanes`<br><sub>ook: planes, aircraft</sub> | `airplanes`  /  `airplanes here`  /  `airplanes 50.9,5.9` | Vliegtuigen boven de bot (of boven een plek), met hoogte en type. Staat standaard uit (kaart *airplanes*). 🌐 |
+| `airplanes`<br><sub>ook: planes, aircraft</sub> | `airplanes`  /  `airplanes here`  /  `airplanes 50.9,5.9` | Vliegtuigen boven de bot (of boven een plek), met hoogte en type. Staat standaard uit (kaart *airplanes*). Eenheden kies je op die kaart: metrisch, imperiaal of luchtvaart. 🌐 |
 | `alert`<br><sub>ook: incident</sub> | `alert <plaats>` | Actieve noodmeldingen (PulsePoint, vooral VS). 🌐 |
 
 ## Leuk

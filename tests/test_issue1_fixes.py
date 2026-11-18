@@ -65,6 +65,37 @@ check(air({"bot_latitude": "51.1", "bot_longitude": "4.2"}, {"adv_lat": 50.9, "a
 check(air({"bot_name": "X"}, {"adv_lat": 0.0, "adv_lon": 0.0}) is None, "radio zonder positie (0,0): geen plek")
 check(air({"bot_name": "X"}, {}) is None, "niets bekend: geen plek (uitleg zoals voorheen)")
 
+# ---------------------------------------------------------------- airplanes: Units on the card (GitHub issue #6)
+def air_units(units):
+    from unittest.mock import MagicMock as _M
+    cfg = configparser.ConfigParser()
+    cfg["Bot"] = {"bot_name": "X"}
+    cfg["Airplanes_Command"] = {"enabled": "true"} if units is None else {"enabled": "true", "units": units}
+    bot = _M()
+    bot.config = cfg
+    cmd = Air(bot)
+    plane = {"flight": "KLM12", "alt_baro": 10000, "gs": 100, "_distance_nm": 10.0, "_distance_km": 18.52,
+             "_bearing_cardinal": "NE", "lat": 51.0, "lon": 5.0, "t": "B738"}
+    filt = cmd._parse_filters(["radius=10", "alt=1000", "speed=100"])
+    return cmd, cmd._format_aircraft_list([plane], 51.0, 5.0) if hasattr(cmd, "_format_aircraft_list") else "", filt
+
+
+check(any(f["key"] == "units" and f["type"] == "enum" and {o["value"] for o in f["options"]} == {"metric", "imperial", "aviation"}
+          for f in Air.settings_schema), "airplanes-kaart heeft keuze Units (metric/imperial/aviation)")
+try:
+    cm, out_m, f_m = air_units(None)
+    ci, out_i, f_i = air_units("imperial")
+    ca, out_a, f_a = air_units("aviation")
+    check(cm._dist_label == "km" and ci._dist_label == "mi" and ca._dist_label == "nm", "standaard metrisch; imperial = mi; aviation = nm")
+    check(abs(f_i["radius"] - 8.68976) < 0.01 and abs(f_m["radius"] - 5.39957) < 0.01 and abs(f_a["radius"] - 10) < 0.01,
+          f"radius= in de eenheid van de kaart ({f_m['radius']}, {f_i['radius']}, {f_a['radius']})")
+    check(abs(f_i["alt_min"] - 1000) < 0.01 and abs(f_m["alt_min"] - 3280.84) < 0.1 and abs(f_i["speed_min"] - 86.9) < 0.1,
+          "alt= en speed= in de eenheid van de kaart")
+    check("11.5mi NE" in str(out_i) and "18.5km NE" in str(out_m) and "10.0nm NE" in str(out_a)
+          and "ft" in str(out_i) and "mph" in str(out_i), f"antwoord in de gekozen eenheid ({out_i!r} / {out_m!r})")
+except Exception as e:  # noqa: BLE001
+    check(False, f"airplanes Units: {type(e).__name__}: {e}")
+
 # ---------------------------------------------------------------- path: numbered parts, max hops shown
 Path = imp("modules.commands.path_command").PathCommand
 check(any(f["key"] == "max_hops_shown" for f in Path.settings_schema), "path-kaart heeft 'Max hops shown'")

@@ -265,19 +265,11 @@ it heard. Group messages an observer hears also count on the Channel radar; a me
 by an observer counts once. The service only listens: nothing is published, nothing is sent over the radio, and message
 texts are never decrypted. Data older than 30 days is removed.
 
-**Without a broker of your own: AnalyzerFeed.** The public **EU Meshcore Analyzer** (meshcore-analyzer.eu; the same data
-on cornmeister.nl and analyzer.meshcorenetz.de) collects what thousands of observers hear from all the big brokers and
-shows it without an account. On the **AnalyzerFeed** card (off by default; needs a restart) fill in the **Regions** you
-want, the region codes (IATA) the observers use, e.g. `MST` (South Limburg), or `MST, LGG, EIN`; the codes in use are on
-the analyzer's website. Every 5 minutes the bot reads those observers (online/offline, model, firmware) and every minute
-the new packets they heard. Radar -> Observers shows the observers and one row per region (**"MST · EU Analyzer"**) with
-all of the region's traffic: packets, adverts, group messages and the nodes heard there (packet counts per single
-observer are not in the analyzer's region view). Their group messages count on the Channel radar too, once per packet.
-Only reads; nothing is published or sent over the radio. It is a free community service: keep the defaults slow.
-With **Look up unknown names** (on with the card, also without regions) neighbours in your repeaters' neighbour lists
-that only have a key prefix (`a1b2c3`) get their name from the analyzer; the Repeater page marks them *analyzer*. At most
-20 lookups an hour and each prefix once a week; prefixes shorter than 6 characters are never asked (hundreds of nodes
-share them). The **Analyzer** field takes any site of the analyzer, for example `https://cornmeister.nl`.
+**AnalyzerFeed is switched off (1.6.4).** The EU Meshcore Analyzer (meshcore-analyzer.eu, cornmeister.nl,
+analyzer.meshcorenetz.de) no longer allows automated collection from its site or its `/api`
+(see https://meshcore-analyzer.eu/llms.txt), so the add-on does not read it any more, whatever the card says. For data,
+ask in #analyzer-requests on the analyzer's Discord. Publishing to the analyzer as an MQTT observer (above) is not
+affected and is welcome there.
 
 ### Heartbeat: is the bot alive?
 
@@ -569,8 +561,9 @@ Commands for everyone on the mesh. Each has a card on the Plugins page with an o
   never decrypts anything and sends nothing. Messages on channels it cannot name (private channels, unknown names) are
   counted by channel byte. Private channels that are not on your radio stay unknown. Add names you suspect on the **ChannelRadar** card (on by default).
 - **Channel radar, community channel list:** with *Community channel list* on (ChannelRadar card, off by default) the bot
-  fetches once a day the list of about 2000 hashtag channels seen across Europe (EU Meshcore Analyzer; the Dutch MeshCore
-  toolbox shows the same list, its address can be set on the card) and recognises them, also back through the packet log.
+  fetches once a day a list of hashtag channels from the address on the card and recognises them, also back through the
+  packet log. Since 1.6.4 it is never fetched from the EU Meshcore Analyzer (meshcore-analyzer.eu, cornmeister.nl,
+  meshcorenetz.de): that site no longer allows automated collection.
   Like the generated names, such a channel shows from 2 messages: with that many names the short check code now and then
   matches a private message by chance. Only the names are kept.
 - **Games channel** (card **GamesChannel**, off by default): fill in a channel (for example `#games`, also under *Bot >
